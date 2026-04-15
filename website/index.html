@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIT Secure Inference — 隐私保护视觉推理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #05050f;
+      --surface: #0d0d1a;
+      --border: rgba(255,255,255,0.08);
+      --purple: #8b5cf6;
+      --cyan: #22d3ee;
+      --green: #4ade80;
+    }
+    body { background-color: var(--bg); }
+
+    /* Subtle grid background */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+
+    /* Radial glow */
+    .hero-glow {
+      background: radial-gradient(ellipse 80% 50% at 50% -20%,
+        rgba(139,92,246,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%,
+        rgba(34,211,238,0.1) 0%, transparent 60%);
+    }
+
+    /* Glass card */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+
+    /* Animated data flow dots */
+    .flow-track {
+      position: relative;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(139,92,246,0.3), rgba(34,211,238,0.3));
+      overflow: visible;
+    }
+    .flow-dot {
+      position: absolute;
+      top: -3px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      box-shadow: 0 0 8px rgba(139,92,246,0.8);
+      animation: flowDot 2.4s linear infinite;
+    }
+    .flow-dot:nth-child(2) { animation-delay: 0.8s; }
+    .flow-dot:nth-child(3) { animation-delay: 1.6s; }
+    @keyframes flowDot {
+      0%   { left: -8px; opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 1; }
+      100% { left: calc(100% + 8px); opacity: 0; }
+    }
+
+    /* Status dot pulse */
+    .status-pulse {
+      animation: statusPulse 2s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+    }
+
+    /* Fade-in on scroll */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* Gradient text */
+    .grad-text {
+      background: linear-gradient(135deg, #c4b5fd 0%, #22d3ee 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(139,92,246,0.3);
+      transition: all 0.2s;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--purple);
+      background: rgba(139,92,246,0.06);
+    }
+
+    /* Result box typing effect */
+    .result-content {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+    /* Number badge */
+    .step-num {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+  </style>
+</head>
+<body class="font-sans text-white antialiased">
+
+  <!-- ─── NAV ─── -->
+  <nav class="fixed top-0 w-full z-50 border-b border-white/5" style="background:rgba(5,5,15,0.85);backdrop-filter:blur(20px)">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base" style="background:linear-gradient(135deg,#8b5cf6,#22d3ee)">🔒</div>
+        <span class="font-semibold text-white text-sm tracking-tight">VIT Secure</span>
+      </div>
+      <div class="hidden md:flex items-center gap-7 text-sm" style="color:rgba(255,255,255,0.55)">
+        <a href="#how-it-works" class="hover:text-white transition-colors">原理</a>
+        <a href="#privacy"      class="hover:text-white transition-colors">隐私</a>
+        <a href="#demo"         class="hover:text-white transition-colors">Demo</a>
+        <a href="#install"      class="hover:text-white transition-colors">安装</a>
+      </div>
+      <a href="#demo"
+         class="text-sm font-medium px-4 py-2 rounded-lg border transition-all"
+         style="border-color:rgba(139,92,246,0.5);color:#c4b5fd;background:rgba(139,92,246,0.1)"
+         onmouseover="this.style.background='rgba(139,92,246,0.2)'"
+         onmouseout="this.style.background='rgba(139,92,246,0.1)'">
+        开始使用 →
+      </a>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─── -->
+  <section class="relative pt-28 pb-24 px-6 overflow-hidden grid-bg hero-glow">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full mb-8 border"
+           style="border-color:rgba(139,92,246,0.4);background:rgba(139,92,246,0.08);color:#c4b5fd">
+        <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+        端云协同 · 隐私优先 · 本地 ViT 编码
+      </div>
+
+      <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-none mb-6">
+        <span class="text-white">图片在本地，</span><br/>
+        <span class="grad-text">智能在云端</span>
+      </h1>
+
+      <p class="text-lg md:text-xl max-w-2xl mx-auto mb-10" style="color:rgba(255,255,255,0.55);line-height:1.7">
+        本地 ViT 编码器提取图像特征向量，仅上传压缩特征至云端 GLM-4.5V。<br/>
+        原始图片、像素数据<strong class="text-white">永不离开你的设备</strong>。
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-20">
+        <a href="#demo"
+           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all"
+           style="background:linear-gradient(135deg,#8b5cf6,#22d3ee)"
+           onmouseover="this.style.opacity='0.9'"
+           onmouseout="this.style.opacity='1'">
+          🔒 立即体验 Demo
+        </a>
+        <a href="#how-it-works"
+           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm transition-all glass"
+           style="color:rgba(255,255,255,0.7)">
+          了解工作原理 ↓
+        </a>
+      </div>
+
+      <!-- Animated pipeline diagram -->
+      <div class="glass rounded-2xl p-6 md:p-8 max-w-3xl mx-auto">
+        <div class="flex items-center gap-0 overflow-x-auto pb-2">
+
+          <!-- Step: Image -->
+          <div class="flex flex-col items-center gap-2 shrink-0">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)">📸</div>
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">原始图片</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(139,92,246,0.15);color:#c4b5fd">本地</span>
+          </div>
+
+          <!-- Flow 1 -->
+          <div class="flex-1 min-w-[48px] px-2">
+            <div class="flow-track">
+              <div class="flow-dot"></div>
+              <div class="flow-dot"></div>
+              <div class="flow-dot"></div>
+            </div>
+          </div>
+
+          <!-- Step: ViT -->
+          <div class="flex flex-col items-center gap-2 shrink-0">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)">⚡</div>
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">ViT 编码</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(139,92,246,0.15);color:#c4b5fd">本地</span>
+          </div>
+
+          <!-- Flow 2 (the privacy boundary) -->
+          <div class="flex-1 min-w-[48px] px-2">
+            <div class="flow-track" style="background:linear-gradient(90deg,rgba(139,92,246,0.3),rgba(34,211,238,0.3))">
+              <div class="flow-dot"></div>
+              <div class="flow-dot"></div>
+              <div class="flow-dot"></div>
+            </div>
+            <div class="text-center mt-1">
+              <span class="text-xs" style="color:rgba(255,255,255,0.3)">特征向量 ~1MB</span>
+            </div>
+          </div>
+
+          <!-- Step: Feature -->
+          <div class="flex flex-col items-center gap-2 shrink-0">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3)">📦</div>
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">特征向量</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,0.1);color:#67e8f9">上传</span>
+          </div>
+
+          <!-- Flow 3 -->
+          <div class="flex-1 min-w-[48px] px-2">
+            <div class="flow-track" style="background:linear-gradient(90deg,rgba(34,211,238,0.3),rgba(74,222,128,0.3))">
+              <div class="flow-dot" style="background:linear-gradient(135deg,#22d3ee,#4ade80);box-shadow:0 0 8px rgba(34,211,238,0.8)"></div>
+              <div class="flow-dot" style="background:linear-gradient(135deg,#22d3ee,#4ade80);box-shadow:0 0 8px rgba(34,211,238,0.8);animation-delay:0.8s"></div>
+              <div class="flow-dot" style="background:linear-gradient(135deg,#22d3ee,#4ade80);box-shadow:0 0 8px rgba(34,211,238,0.8);animation-delay:1.6s"></div>
+            </div>
+          </div>
+
+          <!-- Step: GLM -->
+          <div class="flex flex-col items-center gap-2 shrink-0">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3)">☁️</div>
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">GLM-4.5V</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,0.1);color:#67e8f9">云端</span>
+          </div>
+
+          <!-- Flow 4 -->
+          <div class="flex-1 min-w-[48px] px-2">
+            <div class="flow-track" style="background:rgba(74,222,128,0.3)">
+              <div class="flow-dot" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,0.8)"></div>
+              <div class="flow-dot" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,0.8);animation-delay:0.8s"></div>
+              <div class="flow-dot" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,0.8);animation-delay:1.6s"></div>
+            </div>
+          </div>
+
+          <!-- Step: Result -->
+          <div class="flex flex-col items-center gap-2 shrink-0">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3)">📝</div>
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">分析结果</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(74,222,128,0.1);color:#86efac">返回</span>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-4 border-t border-white/5 flex items-center justify-center gap-6 text-xs" style="color:rgba(255,255,255,0.35)">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full" style="background:rgba(139,92,246,0.6)"></span>
+            本地区域（图片留存）
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full" style="background:rgba(34,211,238,0.6)"></span>
+            上传：仅特征向量
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full" style="background:rgba(74,222,128,0.6)"></span>
+            云端推理结果
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS ─── -->
+  <section id="how-it-works" class="py-24 px-6 grid-bg">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16 fade-in">
+        <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#8b5cf6">工作原理</div>
+        <h2 class="text-3xl md:text-4xl font-bold text-white">三步完成隐私推理</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Step 1 -->
+        <div class="glass rounded-2xl p-6 fade-in">
+          <div class="w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)">🖼️</div>
+          <div class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:rgba(139,92,246,0.8)">Step 01 · 本地</div>
+          <h3 class="text-lg font-bold text-white mb-3">ViT 本地编码</h3>
+          <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.5)">
+            图片在你的 Mac 上，通过 300M 参数的 ViT 视觉编码器提取高维特征向量。Metal GPU 加速，通常在 30–180 秒内完成。
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(139,92,246,0.1);color:#c4b5fd">300M 参数</span>
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(139,92,246,0.1);color:#c4b5fd">Metal GPU</span>
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(139,92,246,0.1);color:#c4b5fd">macOS</span>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="glass rounded-2xl p-6 fade-in" style="transition-delay:0.1s">
+          <div class="w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl" style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3)">📤</div>
+          <div class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:rgba(34,211,238,0.8)">Step 02 · 传输</div>
+          <h3 class="text-lg font-bold text-white mb-3">仅上传特征向量</h3>
+          <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.5)">
+            经过 Gzip 压缩，仅将约 1MB 的特征向量上传至云端。<strong style="color:rgba(255,255,255,0.7)">原始图片像素数据始终保留在本地，不会上传。</strong>
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(34,211,238,0.1);color:#67e8f9">~1MB 传输量</span>
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(34,211,238,0.1);color:#67e8f9">3× 压缩比</span>
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(34,211,238,0.1);color:#67e8f9">无原始像素</span>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="glass rounded-2xl p-6 fade-in" style="transition-delay:0.2s">
+          <div class="w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3)">🤖</div>
+          <div class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:rgba(74,222,128,0.8)">Step 03 · 云端</div>
+          <h3 class="text-lg font-bold text-white mb-3">GLM-4.5V 推理</h3>
+          <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.5)">
+            智谱 GLM-4.5V 接收特征向量后完成视觉理解和文字生成，支持 OCR、文档分析、图片描述、多图对比等任务。
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(74,222,128,0.1);color:#86efac">GLM-4.5V</span>
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(74,222,128,0.1);color:#86efac">OCR</span>
+            <span class="text-xs px-2 py-1 rounded-md" style="background:rgba(74,222,128,0.1);color:#86efac">文档分析</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PRIVACY ─── -->
+  <section id="privacy" class="py-24 px-6" style="background:linear-gradient(180deg,var(--bg) 0%,rgba(13,13,26,0.8) 100%)">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16 fade-in">
+        <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#22d3ee">隐私保障</div>
+        <h2 class="text-3xl md:text-4xl font-bold text-white">什么上传了，什么没有</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-12 fade-in">
+        <!-- Traditional approach -->
+        <div class="rounded-2xl p-6 border" style="background:rgba(239,68,68,0.04);border-color:rgba(239,68,68,0.2)">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="text-xl">❌</div>
+            <h3 class="font-bold text-white">传统方案</h3>
+            <span class="ml-auto text-xs px-2 py-1 rounded-full" style="background:rgba(239,68,68,0.1);color:#f87171">隐私风险</span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 text-sm p-3 rounded-xl" style="background:rgba(239,68,68,0.06);color:rgba(255,255,255,0.7)">
+              <span class="text-lg">📸</span>
+              <div>
+                <div class="font-medium text-white">原始图片直接上传</div>
+                <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">包含完整像素数据，可被服务器解码还原</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 text-sm p-3 rounded-xl" style="background:rgba(239,68,68,0.06);color:rgba(255,255,255,0.7)">
+              <span class="text-lg">📄</span>
+              <div>
+                <div class="font-medium text-white">文件内容完全暴露</div>
+                <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">合同、财报、医疗影像全部明文传输</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 text-sm p-3 rounded-xl" style="background:rgba(239,68,68,0.06);color:rgba(255,255,255,0.7)">
+              <span class="text-lg">☁️</span>
+              <div>
+                <div class="font-medium text-white">服务器存有完整副本</div>
+                <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">可能被用于训练或其他目的</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIT Secure approach -->
+        <div class="rounded-2xl p-6 border" style="background:rgba(74,222,128,0.04);border-color:rgba(74,222,128,0.2)">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="text-xl">✅</div>
+            <h3 class="font-bold text-white">VIT Secure</h3>
+            <span class="ml-auto text-xs px-2 py-1 rounded-full" style="background:rgba(74,222,128,0.1);color:#86efac">隐私保护</span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 text-sm p-3 rounded-xl" style="background:rgba(74,222,128,0.06);color:rgba(255,255,255,0.7)">
+              <span class="text-lg">🏠</span>
+              <div>
+                <div class="font-medium text-white">原始图片留在本地</div>
+                <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">图片文件永不离开你的设备</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 text-sm p-3 rounded-xl" style="background:rgba(74,222,128,0.06);color:rgba(255,255,255,0.7)">
+              <span class="text-lg">📦</span>
+              <div>
+                <div class="font-medium text-white">仅上传特征向量 ~1MB</div>
+                <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">高维向量无法还原为原始图片内容</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 text-sm p-3 rounded-xl" style="background:rgba(74,222,128,0.06);color:rgba(255,255,255,0.7)">
+              <span class="text-lg">🔒</span>
+              <div>
+                <div class="font-medium text-white">服务器无法重建图片</div>
+                <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">ViT 编码为单向过程，信息量大幅压缩</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 fade-in">
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-black grad-text">300M</div>
+          <div class="text-xs mt-1" style="color:rgba(255,255,255,0.45)">ViT 编码器参数量</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-black grad-text">~1MB</div>
+          <div class="text-xs mt-1" style="color:rgba(255,255,255,0.45)">特征向量传输大小</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-black grad-text">3×</div>
+          <div class="text-xs mt-1" style="color:rgba(255,255,255,0.45)">Gzip 压缩比</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-black grad-text">0</div>
+          <div class="text-xs mt-1" style="color:rgba(255,255,255,0.45)">原始像素上传数量</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DEMO ─── -->
+  <section id="demo" class="py-24 px-6 grid-bg">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-12 fade-in">
+        <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#8b5cf6">本地 Demo</div>
+        <h2 class="text-3xl md:text-4xl font-bold text-white">在线体验隐私推理</h2>
+        <p class="mt-3 text-sm" style="color:rgba(255,255,255,0.45)">
+          需要在本地运行推理服务 · 图片和数据全程不离开你的设备
+        </p>
+      </div>
+
+      <div class="glass rounded-2xl p-6 md:p-8 fade-in">
+
+        <!-- Server status bar -->
+        <div class="flex items-center justify-between mb-6 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
+          <div class="flex items-center gap-2.5">
+            <div id="status-dot" class="w-2.5 h-2.5 rounded-full" style="background:#3f3f46"></div>
+            <span id="status-text" class="text-sm font-medium" style="color:rgba(255,255,255,0.5)">未连接本地服务</span>
+          </div>
+          <button id="connect-btn" onclick="checkServer()"
+            class="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+            style="background:rgba(139,92,246,0.15);color:#c4b5fd;border:1px solid rgba(139,92,246,0.3)">
+            检测连接
+          </button>
+        </div>
+
+        <!-- Setup instructions (shown when not connected) -->
+        <div id="setup-instructions" class="mb-6 p-4 rounded-xl" style="background:rgba(34,211,238,0.04);border:1px solid rgba(34,211,238,0.15)">
+          <p class="text-sm font-semibold text-white mb-3">首次使用 · 三步启动本地服务</p>
+          <div class="space-y-2.5">
+            <div class="flex items-start gap-3 text-sm">
+              <div class="step-num mt-0.5">1</div>
+              <div style="color:rgba(255,255,255,0.6)">
+                <a href="#install" class="underline" style="color:#67e8f9">安装 VIT Secure Inference</a>（macOS DMG）
+              </div>
+            </div>
+            <div class="flex items-start gap-3 text-sm">
+              <div class="step-num mt-0.5">2</div>
+              <div style="color:rgba(255,255,255,0.6)">
+                启动本地推理服务：<br/>
+                <code class="font-mono text-xs px-2 py-0.5 rounded mt-1 inline-block" style="background:rgba(0,0,0,0.4);color:#a5f3fc">./run_server.sh</code>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 text-sm">
+              <div class="step-num mt-0.5">3</div>
+              <div style="color:rgba(255,255,255,0.6)">
+                启动 CORS 桥接代理（新终端窗口）：<br/>
+                <code class="font-mono text-xs px-2 py-0.5 rounded mt-1 inline-block" style="background:rgba(0,0,0,0.4);color:#a5f3fc">python3 cors_proxy.py</code>
+                &nbsp;
+                <a href="cors_proxy.py" download class="text-xs underline" style="color:#67e8f9">下载 cors_proxy.py</a>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs mt-3" style="color:rgba(255,255,255,0.3)">启动后点击上方「检测连接」按钮</p>
+        </div>
+
+        <!-- Demo UI (shown when connected) -->
+        <div id="demo-ui" class="hidden space-y-5">
+
+          <!-- Image upload -->
+          <div>
+            <label class="text-xs font-semibold uppercase tracking-widest mb-2 block" style="color:rgba(255,255,255,0.5)">上传图片</label>
+            <div id="upload-zone"
+                 class="upload-zone rounded-xl p-8 text-center cursor-pointer relative"
+                 onclick="document.getElementById('file-input').click()"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)">
+              <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleFileSelect(event)" />
+              <div id="upload-placeholder">
+                <div class="text-3xl mb-2">📁</div>
+                <div class="text-sm font-medium text-white">拖拽图片到此处，或点击选择</div>
+                <div class="text-xs mt-1" style="color:rgba(255,255,255,0.35)">支持 PNG · JPEG · WEBP</div>
+              </div>
+              <div id="image-preview" class="hidden">
+                <img id="preview-img" class="max-h-48 mx-auto rounded-lg" src="" alt="预览" />
+                <div id="file-name" class="text-xs mt-2" style="color:rgba(255,255,255,0.4)"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prompt -->
+          <div>
+            <label class="text-xs font-semibold uppercase tracking-widest mb-2 block" style="color:rgba(255,255,255,0.5)">提示词</label>
+            <textarea id="prompt-input" rows="3"
+              class="w-full rounded-xl text-sm font-sans px-4 py-3 resize-none focus:outline-none transition-all"
+              style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:white;caret-color:#8b5cf6"
+              placeholder="请描述这张图片的内容，提取其中的文字，或分析相关数据…"
+              onfocus="this.style.borderColor='rgba(139,92,246,0.5)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.08)'"
+            >请详细描述这张图片的内容。</textarea>
+          </div>
+
+          <!-- API Key -->
+          <div>
+            <label class="text-xs font-semibold uppercase tracking-widest mb-2 block" style="color:rgba(255,255,255,0.5)">
+              Zhipu API Key
+              <a href="https://open.bigmodel.cn" target="_blank" class="normal-case ml-2 font-normal" style="color:#67e8f9">申请 →</a>
+            </label>
+            <input type="password" id="api-key-input"
+              class="w-full rounded-xl text-sm font-mono px-4 py-3 focus:outline-none transition-all"
+              style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:white;caret-color:#8b5cf6"
+              placeholder="xxxxxxxx.xxxxxxxxxx"
+              onfocus="this.style.borderColor='rgba(139,92,246,0.5)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.08)'"
+            />
+          </div>
+
+          <!-- Submit -->
+          <button id="submit-btn" onclick="runInference()"
+            class="w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+            style="background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:white">
+            🔒 本地隐私推理
+          </button>
+        </div>
+
+        <!-- Result -->
+        <div id="result-section" class="hidden mt-6 pt-6 border-t border-white/5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm font-semibold text-white">🔍 分析结果</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(74,222,128,0.1);color:#86efac">本地隐私推理</span>
+          </div>
+          <div id="result-content"
+               class="result-content text-sm leading-relaxed p-4 rounded-xl"
+               style="background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.06);min-height:80px">
+          </div>
+          <div id="result-meta" class="mt-3 text-xs" style="color:rgba(255,255,255,0.3)"></div>
+        </div>
+
+        <!-- Error -->
+        <div id="error-section" class="hidden mt-4 p-4 rounded-xl" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2)">
+          <p class="text-sm font-semibold" style="color:#f87171">出错了</p>
+          <p id="error-message" class="text-xs mt-1" style="color:rgba(239,68,68,0.7)"></p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── INSTALL ─── -->
+  <section id="install" class="py-24 px-6" style="background:linear-gradient(180deg,var(--bg) 0%,rgba(13,13,26,0.6) 100%)">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-16 fade-in">
+        <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#4ade80">快速安装</div>
+        <h2 class="text-3xl md:text-4xl font-bold text-white">三步开始使用</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-10 fade-in">
+        <!-- Install step 1 -->
+        <div class="glass rounded-2xl p-6">
+          <div class="step-num mb-4">1</div>
+          <h3 class="font-bold text-white mb-2">下载安装包</h3>
+          <p class="text-sm mb-4" style="color:rgba(255,255,255,0.5)">下载 macOS DMG 安装文件，包含本地推理引擎和所有依赖。</p>
+          <a href="VIT-Secure-Inference-Installer.dmg"
+             class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-all"
+             style="background:rgba(74,222,128,0.1);color:#86efac;border:1px solid rgba(74,222,128,0.25)">
+            ⬇️ 下载 DMG（macOS）
+          </a>
+        </div>
+
+        <!-- Install step 2 -->
+        <div class="glass rounded-2xl p-6">
+          <div class="step-num mb-4">2</div>
+          <h3 class="font-bold text-white mb-2">安装并启动服务</h3>
+          <p class="text-sm mb-4" style="color:rgba(255,255,255,0.5)">双击 DMG 内的安装脚本，然后运行本地推理服务。</p>
+          <div class="space-y-2">
+            <code class="block text-xs px-3 py-2 rounded-lg font-mono" style="background:rgba(0,0,0,0.5);color:#a5f3fc">
+              # 双击 .command 安装
+            </code>
+            <code class="block text-xs px-3 py-2 rounded-lg font-mono" style="background:rgba(0,0,0,0.5);color:#a5f3fc">
+              ./run_server.sh
+            </code>
+          </div>
+        </div>
+
+        <!-- Install step 3 -->
+        <div class="glass rounded-2xl p-6">
+          <div class="step-num mb-4">3</div>
+          <h3 class="font-bold text-white mb-2">启动桥接代理</h3>
+          <p class="text-sm mb-4" style="color:rgba(255,255,255,0.5)">运行 CORS 代理，让本页面可以安全连接你的本地服务。</p>
+          <div class="space-y-2">
+            <code class="block text-xs px-3 py-2 rounded-lg font-mono" style="background:rgba(0,0,0,0.5);color:#a5f3fc">
+              python3 cors_proxy.py
+            </code>
+            <a href="cors_proxy.py" download
+               class="inline-flex items-center gap-1.5 text-xs font-medium" style="color:#67e8f9">
+              ⬇️ 下载 cors_proxy.py
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Supported tasks -->
+      <div class="glass rounded-2xl p-6 fade-in">
+        <h3 class="font-semibold text-white mb-4">支持的分析任务</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="p-3 rounded-xl text-sm" style="background:rgba(255,255,255,0.03)">
+            <div class="text-lg mb-1">🔤</div>
+            <div class="font-medium text-white text-xs">OCR 文字提取</div>
+            <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">截图、扫描件、表格</div>
+          </div>
+          <div class="p-3 rounded-xl text-sm" style="background:rgba(255,255,255,0.03)">
+            <div class="text-lg mb-1">📊</div>
+            <div class="font-medium text-white text-xs">文档 / 报告分析</div>
+            <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">财报、合同、论文</div>
+          </div>
+          <div class="p-3 rounded-xl text-sm" style="background:rgba(255,255,255,0.03)">
+            <div class="text-lg mb-1">🔍</div>
+            <div class="font-medium text-white text-xs">多图对比</div>
+            <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">设计稿、版本差异</div>
+          </div>
+          <div class="p-3 rounded-xl text-sm" style="background:rgba(255,255,255,0.03)">
+            <div class="text-lg mb-1">🏥</div>
+            <div class="font-medium text-white text-xs">专项领域</div>
+            <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.4)">医学、电路、工业</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="py-12 px-6 border-t border-white/5">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md flex items-center justify-center text-sm" style="background:linear-gradient(135deg,#8b5cf6,#22d3ee)">🔒</div>
+        <span class="text-sm font-semibold text-white">VIT Secure Inference</span>
+      </div>
+      <p class="text-xs" style="color:rgba(255,255,255,0.3)">
+        端云协同隐私推理 · ViT 本地编码 + GLM-4.5V 云端分析 · 原始数据永不离开本地
+      </p>
+      <div class="flex items-center gap-4 text-xs" style="color:rgba(255,255,255,0.3)">
+        <a href="#how-it-works" class="hover:text-white transition-colors">原理</a>
+        <a href="#demo" class="hover:text-white transition-colors">Demo</a>
+        <a href="#install" class="hover:text-white transition-colors">安装</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── JS ─── -->
+  <script>
+    const PROXY_URL = 'http://localhost:8223';
+    let selectedFile = null;
+    let isConnected = false;
+
+    // ── Scroll fade-in ──
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // ── Server connection ──
+    async function checkServer() {
+      const btn = document.getElementById('connect-btn');
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      btn.textContent = '检测中…';
+      btn.disabled = true;
+      dot.style.background = '#a1a1aa';
+
+      try {
+        const res = await fetch(`${PROXY_URL}/health`, {
+          signal: AbortSignal.timeout(4000)
+        });
+        if (res.ok) {
+          setConnected(true);
+        } else {
+          setConnected(false);
+        }
+      } catch (e) {
+        setConnected(false);
+      } finally {
+        btn.textContent = '检测连接';
+        btn.disabled = false;
+      }
+    }
+
+    function setConnected(ok) {
+      isConnected = ok;
+      const dot  = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      const setup = document.getElementById('setup-instructions');
+      const ui    = document.getElementById('demo-ui');
+
+      if (ok) {
+        dot.style.background = '#4ade80';
+        dot.classList.add('status-pulse');
+        text.textContent = '✓ 本地服务已连接（localhost:8223）';
+        text.style.color = '#4ade80';
+        setup.classList.add('hidden');
+        ui.classList.remove('hidden');
+      } else {
+        dot.style.background = '#f87171';
+        dot.classList.remove('status-pulse');
+        text.textContent = '无法连接本地服务 — 请按下方说明启动';
+        text.style.color = 'rgba(248,113,113,0.8)';
+        setup.classList.remove('hidden');
+        ui.classList.add('hidden');
+      }
+    }
+
+    // ── File handling ──
+    function handleFileSelect(e) {
+      setFile(e.target.files[0]);
+    }
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('upload-zone').classList.add('dragover');
+    }
+    function handleDragLeave(e) {
+      document.getElementById('upload-zone').classList.remove('dragover');
+    }
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('upload-zone').classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) setFile(file);
+    }
+    function setFile(file) {
+      if (!file) return;
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('preview-img').src = e.target.result;
+        document.getElementById('file-name').textContent = `${file.name} · ${(file.size/1024).toFixed(0)} KB`;
+        document.getElementById('upload-placeholder').classList.add('hidden');
+        document.getElementById('image-preview').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ── Inference ──
+    async function runInference() {
+      const prompt  = document.getElementById('prompt-input').value.trim();
+      const apiKey  = document.getElementById('api-key-input').value.trim();
+      const btn     = document.getElementById('submit-btn');
+      const resultSection = document.getElementById('result-section');
+      const resultContent = document.getElementById('result-content');
+      const resultMeta    = document.getElementById('result-meta');
+      const errorSection  = document.getElementById('error-section');
+      const errorMsg      = document.getElementById('error-message');
+
+      if (!selectedFile) { showError('请先上传一张图片'); return; }
+      if (!prompt)        { showError('请输入提示词'); return; }
+      if (!apiKey)        { showError('请输入 Zhipu API Key'); return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> 推理中…';
+      resultSection.classList.add('hidden');
+      errorSection.classList.add('hidden');
+
+      const startTime = Date.now();
+
+      try {
+        // Read file as base64
+        const base64 = await fileToBase64(selectedFile);
+        const mime = selectedFile.type || 'image/jpeg';
+
+        const payload = {
+          model: 'glm-4.5v-ecc',
+          stream: false,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: `data:${mime};base64,${base64}` } },
+              { type: 'text', text: prompt }
+            ]
+          }]
+        };
+
+        const res = await fetch(`${PROXY_URL}/v1/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(300000)
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`服务器返回 ${res.status}: ${errText}`);
+        }
+
+        const data = await res.json();
+        const content = data?.choices?.[0]?.message?.content;
+        if (!content) throw new Error('响应格式异常：' + JSON.stringify(data));
+
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        resultContent.textContent = content;
+        resultMeta.textContent = `🔒 隐私保障：图片全程留在本地，仅特征向量经本地服务编码后上传  ·  ⏱️ 总耗时 ${elapsed}s`;
+        resultSection.classList.remove('hidden');
+
+      } catch (e) {
+        showError(e.message || String(e));
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🔒 本地隐私推理';
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('error-message').textContent = msg;
+      document.getElementById('error-section').classList.remove('hidden');
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const dataUrl = e.target.result;
+          resolve(dataUrl.split(',')[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Auto-check server on load (silent)
+    setTimeout(() => checkServer(), 800);
+  </script>
+</body>
+</html>

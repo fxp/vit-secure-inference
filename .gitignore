@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Large binary artifacts (distribute separately)
+*.dmg
+*.zip
+*.dylib
+
+# Model weights (too large for git)
+*.gguf
+vit_openai_server_package/vit_model/
+
+# Compiled server binary
+vit_openai_server_package/bin/vit_openai_server
+
+# iCloud placeholders (zero-byte stubs)
+# These show as 0B locally but are stored in iCloud
