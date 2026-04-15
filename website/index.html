@@ -162,13 +162,23 @@
         <a href="#demo"         class="hover:text-white transition-colors">Demo</a>
         <a href="#install"      class="hover:text-white transition-colors">安装</a>
       </div>
-      <a href="#demo"
-         class="text-sm font-medium px-4 py-2 rounded-lg border transition-all"
-         style="border-color:rgba(139,92,246,0.5);color:#c4b5fd;background:rgba(139,92,246,0.1)"
-         onmouseover="this.style.background='rgba(139,92,246,0.2)'"
-         onmouseout="this.style.background='rgba(139,92,246,0.1)'">
-        开始使用 →
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/fxp/vit-secure-inference" target="_blank" rel="noopener"
+           class="hidden md:flex items-center gap-1.5 text-sm transition-all"
+           style="color:rgba(255,255,255,0.5)"
+           onmouseover="this.style.color='white'"
+           onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          GitHub
+        </a>
+        <a href="#demo"
+           class="text-sm font-medium px-4 py-2 rounded-lg border transition-all"
+           style="border-color:rgba(139,92,246,0.5);color:#c4b5fd;background:rgba(139,92,246,0.1)"
+           onmouseover="this.style.background='rgba(139,92,246,0.2)'"
+           onmouseout="this.style.background='rgba(139,92,246,0.1)'">
+          开始使用 →
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -178,7 +188,7 @@
       <div class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full mb-8 border"
            style="border-color:rgba(139,92,246,0.4);background:rgba(139,92,246,0.08);color:#c4b5fd">
         <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-        端云协同 · 隐私优先 · 本地 ViT 编码
+        Open Source · MIT License · 端云协同隐私推理
       </div>
 
       <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-none mb-6">
@@ -199,10 +209,13 @@
            onmouseout="this.style.opacity='1'">
           🔒 立即体验 Demo
         </a>
-        <a href="#how-it-works"
+        <a href="https://github.com/fxp/vit-secure-inference" target="_blank" rel="noopener"
            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm transition-all glass"
-           style="color:rgba(255,255,255,0.7)">
-          了解工作原理 ↓
+           style="color:rgba(255,255,255,0.8)"
+           onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+           onmouseout="this.style.background=''">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          Star on GitHub
         </a>
       </div>
 
@@ -677,20 +690,105 @@
     </div>
   </section>
 
+  <!-- ─── OPEN SOURCE ─── -->
+  <section class="py-24 px-6 grid-bg">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="fade-in">
+        <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#4ade80">Open Source</div>
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">自由使用，欢迎贡献</h2>
+        <p class="text-base mb-10 max-w-xl mx-auto" style="color:rgba(255,255,255,0.5);line-height:1.7">
+          VIT Secure Inference 以 MIT 协议完全开源。<br/>
+          欢迎 Fork、提 Issue、贡献代码，或直接 Star 支持。
+        </p>
+
+        <!-- Repo card -->
+        <div class="glass rounded-2xl p-6 mb-8 text-left max-w-lg mx-auto">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white" style="opacity:0.7"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              <span class="text-sm font-semibold text-white">fxp / vit-secure-inference</span>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(74,222,128,0.1);color:#86efac;border:1px solid rgba(74,222,128,0.2)">MIT</span>
+          </div>
+          <p class="text-sm mb-4" style="color:rgba(255,255,255,0.45)">
+            Privacy-preserving vision inference: local ViT encoding + cloud GLM-4.5V
+          </p>
+          <div class="flex items-center gap-4 text-xs mb-5" style="color:rgba(255,255,255,0.35)">
+            <span class="flex items-center gap-1">
+              <span style="color:#8b5cf6">●</span> Python / Shell
+            </span>
+            <span class="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Star
+            </span>
+            <span class="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v14l-7-3.5L5 19V5z"/></svg>
+              Fork
+            </span>
+          </div>
+          <a href="https://github.com/fxp/vit-secure-inference" target="_blank" rel="noopener"
+             class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+             style="background:rgba(255,255,255,0.06);color:white;border:1px solid rgba(255,255,255,0.1)"
+             onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+             onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+
+        <!-- Contributing links -->
+        <div class="flex flex-wrap items-center justify-center gap-4 text-sm">
+          <a href="https://github.com/fxp/vit-secure-inference/issues/new" target="_blank" rel="noopener"
+             class="flex items-center gap-1.5 transition-colors"
+             style="color:rgba(255,255,255,0.45)"
+             onmouseover="this.style.color='white'"
+             onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Report Issue
+          </a>
+          <span style="color:rgba(255,255,255,0.15)">·</span>
+          <a href="https://github.com/fxp/vit-secure-inference/fork" target="_blank" rel="noopener"
+             class="flex items-center gap-1.5 transition-colors"
+             style="color:rgba(255,255,255,0.45)"
+             onmouseover="this.style.color='white'"
+             onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v14l-7-3.5L5 19V5z"/></svg>
+            Fork &amp; Contribute
+          </a>
+          <span style="color:rgba(255,255,255,0.15)">·</span>
+          <a href="https://github.com/fxp/vit-secure-inference/blob/main/README.md" target="_blank" rel="noopener"
+             class="flex items-center gap-1.5 transition-colors"
+             style="color:rgba(255,255,255,0.45)"
+             onmouseover="this.style.color='white'"
+             onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Read Docs
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ─── FOOTER ─── -->
-  <footer class="py-12 px-6 border-t border-white/5">
+  <footer class="py-10 px-6 border-t border-white/5">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-2">
         <div class="w-6 h-6 rounded-md flex items-center justify-center text-sm" style="background:linear-gradient(135deg,#8b5cf6,#22d3ee)">🔒</div>
         <span class="text-sm font-semibold text-white">VIT Secure Inference</span>
+        <span class="text-xs px-1.5 py-0.5 rounded" style="background:rgba(74,222,128,0.1);color:#86efac;border:1px solid rgba(74,222,128,0.15)">MIT</span>
       </div>
-      <p class="text-xs" style="color:rgba(255,255,255,0.3)">
+      <p class="text-xs" style="color:rgba(255,255,255,0.25)">
         端云协同隐私推理 · ViT 本地编码 + GLM-4.5V 云端分析 · 原始数据永不离开本地
       </p>
       <div class="flex items-center gap-4 text-xs" style="color:rgba(255,255,255,0.3)">
         <a href="#how-it-works" class="hover:text-white transition-colors">原理</a>
         <a href="#demo" class="hover:text-white transition-colors">Demo</a>
         <a href="#install" class="hover:text-white transition-colors">安装</a>
+        <a href="https://github.com/fxp/vit-secure-inference" target="_blank" rel="noopener"
+           class="flex items-center gap-1 hover:text-white transition-colors">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          GitHub
+        </a>
       </div>
     </div>
   </footer>
