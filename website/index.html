@@ -221,9 +221,10 @@
 
       <!-- Animated pipeline diagram -->
       <div class="glass rounded-2xl p-6 md:p-8 max-w-3xl mx-auto overflow-x-auto">
+        <div class="flex flex-col items-center">
 
         <!-- Row 1: icons + connectors — all items-center, no text inside -->
-        <div class="flex items-center min-w-max mx-auto">
+        <div class="flex items-center">
 
           <!-- Node: Image -->
           <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
@@ -279,7 +280,7 @@
         </div>
 
         <!-- Row 2: labels — same fixed widths so columns align perfectly -->
-        <div class="flex items-start mt-3 min-w-max mx-auto">
+        <div class="flex items-start mt-3">
 
           <!-- Label: Image -->
           <div class="w-14 flex flex-col items-center gap-1 shrink-0">
@@ -325,6 +326,8 @@
             <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(74,222,128,0.1);color:#86efac">返回</span>
           </div>
         </div>
+
+        </div><!-- end flex flex-col items-center -->
 
         <!-- Legend -->
         <div class="mt-5 pt-4 border-t border-white/5 flex items-center justify-center gap-6 text-xs" style="color:rgba(255,255,255,0.35)">
