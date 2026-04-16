@@ -220,53 +220,39 @@
       </div>
 
       <!-- Animated pipeline diagram -->
-      <div class="glass rounded-2xl p-6 md:p-8 max-w-3xl mx-auto">
-        <div class="flex items-center gap-0 overflow-x-auto pb-2">
+      <div class="glass rounded-2xl p-6 md:p-8 max-w-3xl mx-auto overflow-x-auto">
 
-          <!-- Step: Image -->
-          <div class="flex flex-col items-center gap-2 shrink-0">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)">📸</div>
-            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">原始图片</span>
-            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(139,92,246,0.15);color:#c4b5fd">本地</span>
-          </div>
+        <!-- Row 1: icons + connectors — all items-center, no text inside -->
+        <div class="flex items-center min-w-max mx-auto">
 
-          <!-- Flow 1 -->
-          <div class="flex-1 min-w-[48px] px-2">
+          <!-- Node: Image -->
+          <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+               style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)">📸</div>
+
+          <!-- Connector 1 -->
+          <div class="w-12 px-2 shrink-0">
             <div class="flow-track">
-              <div class="flow-dot"></div>
-              <div class="flow-dot"></div>
-              <div class="flow-dot"></div>
+              <div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div>
             </div>
           </div>
 
-          <!-- Step: ViT -->
-          <div class="flex flex-col items-center gap-2 shrink-0">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)">⚡</div>
-            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">ViT 编码</span>
-            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(139,92,246,0.15);color:#c4b5fd">本地</span>
-          </div>
+          <!-- Node: ViT -->
+          <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+               style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)">⚡</div>
 
-          <!-- Flow 2 (the privacy boundary) -->
-          <div class="flex-1 min-w-[48px] px-2">
+          <!-- Connector 2 (privacy boundary, gradient) -->
+          <div class="w-16 px-2 shrink-0">
             <div class="flow-track" style="background:linear-gradient(90deg,rgba(139,92,246,0.3),rgba(34,211,238,0.3))">
-              <div class="flow-dot"></div>
-              <div class="flow-dot"></div>
-              <div class="flow-dot"></div>
-            </div>
-            <div class="text-center mt-1">
-              <span class="text-xs" style="color:rgba(255,255,255,0.3)">特征向量 ~1MB</span>
+              <div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div>
             </div>
           </div>
 
-          <!-- Step: Feature -->
-          <div class="flex flex-col items-center gap-2 shrink-0">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3)">📦</div>
-            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">特征向量</span>
-            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,0.1);color:#67e8f9">上传</span>
-          </div>
+          <!-- Node: Feature vector -->
+          <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+               style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3)">📦</div>
 
-          <!-- Flow 3 -->
-          <div class="flex-1 min-w-[48px] px-2">
+          <!-- Connector 3 -->
+          <div class="w-12 px-2 shrink-0">
             <div class="flow-track" style="background:linear-gradient(90deg,rgba(34,211,238,0.3),rgba(74,222,128,0.3))">
               <div class="flow-dot" style="background:linear-gradient(135deg,#22d3ee,#4ade80);box-shadow:0 0 8px rgba(34,211,238,0.8)"></div>
               <div class="flow-dot" style="background:linear-gradient(135deg,#22d3ee,#4ade80);box-shadow:0 0 8px rgba(34,211,238,0.8);animation-delay:0.8s"></div>
@@ -274,15 +260,12 @@
             </div>
           </div>
 
-          <!-- Step: GLM -->
-          <div class="flex flex-col items-center gap-2 shrink-0">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3)">☁️</div>
-            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">GLM-4.5V</span>
-            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,0.1);color:#67e8f9">云端</span>
-          </div>
+          <!-- Node: GLM -->
+          <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+               style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3)">☁️</div>
 
-          <!-- Flow 4 -->
-          <div class="flex-1 min-w-[48px] px-2">
+          <!-- Connector 4 -->
+          <div class="w-12 px-2 shrink-0">
             <div class="flow-track" style="background:rgba(74,222,128,0.3)">
               <div class="flow-dot" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,0.8)"></div>
               <div class="flow-dot" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,0.8);animation-delay:0.8s"></div>
@@ -290,14 +273,60 @@
             </div>
           </div>
 
-          <!-- Step: Result -->
-          <div class="flex flex-col items-center gap-2 shrink-0">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3)">📝</div>
+          <!-- Node: Result -->
+          <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+               style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3)">📝</div>
+        </div>
+
+        <!-- Row 2: labels — same fixed widths so columns align perfectly -->
+        <div class="flex items-start mt-3 min-w-max mx-auto">
+
+          <!-- Label: Image -->
+          <div class="w-14 flex flex-col items-center gap-1 shrink-0">
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">原始图片</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(139,92,246,0.15);color:#c4b5fd">本地</span>
+          </div>
+
+          <!-- Spacer: connector 1 -->
+          <div class="w-12 shrink-0"></div>
+
+          <!-- Label: ViT -->
+          <div class="w-14 flex flex-col items-center gap-1 shrink-0">
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">ViT 编码</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(139,92,246,0.15);color:#c4b5fd">本地</span>
+          </div>
+
+          <!-- Spacer: connector 2 — show "~1MB" here -->
+          <div class="w-16 flex items-start justify-center shrink-0 pt-0.5">
+            <span class="text-xs" style="color:rgba(255,255,255,0.28)">~1MB</span>
+          </div>
+
+          <!-- Label: Feature -->
+          <div class="w-14 flex flex-col items-center gap-1 shrink-0">
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">特征向量</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,0.1);color:#67e8f9">上传</span>
+          </div>
+
+          <!-- Spacer: connector 3 -->
+          <div class="w-12 shrink-0"></div>
+
+          <!-- Label: GLM -->
+          <div class="w-14 flex flex-col items-center gap-1 shrink-0">
+            <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">GLM-4.5V</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,0.1);color:#67e8f9">云端</span>
+          </div>
+
+          <!-- Spacer: connector 4 -->
+          <div class="w-12 shrink-0"></div>
+
+          <!-- Label: Result -->
+          <div class="w-14 flex flex-col items-center gap-1 shrink-0">
             <span class="text-xs font-medium" style="color:rgba(255,255,255,0.5)">分析结果</span>
             <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(74,222,128,0.1);color:#86efac">返回</span>
           </div>
         </div>
 
+        <!-- Legend -->
         <div class="mt-5 pt-4 border-t border-white/5 flex items-center justify-center gap-6 text-xs" style="color:rgba(255,255,255,0.35)">
           <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full" style="background:rgba(139,92,246,0.6)"></span>
